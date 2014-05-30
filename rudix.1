@@ -1,0 +1,65 @@
+.\"
+.\" Copyright (c) 2005-2014 Ruda Moura
+.\"
+.Dd May 29, 2014
+.Dt RUDIX 1
+.Os
+.Sh NAME
+.Nm rudix
+.Nd Rudix Package Manager
+.Sh SYNOPSIS
+.Nm
+.Op Ar options
+.Op Ar packages
+.Sh DESCRIPTION
+The
+.Nm
+utility is the only package manager for Rudix, therefore you make use of it to install, update, search, remove or print information about Rudix packages.
+.Pp
+Note that every package has an unique identifier called \fIpackage-id\fP and you may refer to Rudix packages by using its full \fIpackage-id\fP or with its short package name.
+.Pp For example, package Compiler Cache's \fIpackage-id\fP is \fIorg.rudix.pkg.ccache\fP but you can use \fIccache\fP as package name.
+.Pp
+Without any arguments provided,
+.Nm
+prints all installed packages.
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl -help
+Print help on screen and exit.
+.It Fl -version
+Print version and copyright information.
+.It Fl -verbose
+Show more information than usual.
+.It Fl -list
+List all instaled packages.
+.It Fl -info Ar package-id
+Print information about a package.
+.It Fl -files Ar package-id
+Print package's files.
+.It Fl -install Ar pkg-path
+Install package. If \fIpkg-path\fP is not a file then try to install the package from the Internet. This operation requires root privileges.
+.It Fl -download Ar package
+Download package but do not install.
+.It Fl -update
+Try to update the current base of installed packages. This operation requires root privileges.
+.It Fl -remove Ar package-id
+Remove (uninstall) package. This operation requires root privileges.
+.It Fl -remove-all
+Remove (uninstall) all installed packages. This operation requires root privileges.
+.It Fl -search
+Search for packages available for installation.
+.It Fl -search-path Ar path
+Print all packages that matches some path.
+.It Fl -freeze
+Freeze package list.
+.El
+.Sh COMMANDS
+The
+.Nm
+utility accepts simple command actions which are related to the options just seen above.
+The commands are: help, version, list, info, files, install, download, update, remove, remove-all, status, search, search-path, and freeze.
+.Sh SEE ALSO
+.Xr pkgutil 1 ,
+.Xr installer 8 ,
+.Xr packagemaker 1
