@@ -16,10 +16,10 @@ import platform
 from distutils.version import LooseVersion
 
 __author__ = 'Rudá Moura <ruda.moura@gmail.com>'
-__copyright__ = 'Copyright © 2005-2014 Rudix'
+__copyright__ = 'Copyright © 2005-2014 Rudix (Ruda Moura)'
 __credits__ = 'Rudá Moura, Leonardo Santagada'
 __license__ = 'BSD'
-__version__ = '2014.5.ɑ3'
+__version__ = '2014.5'
 
 Volume = os.getenv('VOLUME', '/')
 Vendor = os.getenv('VENDOR', 'org.rudix.pkg')
@@ -325,11 +325,23 @@ class RemoteRepository(object):
                 self.packages.append(line)
         return True
 
+    def _retrieve_aliases(self):
+        url = self.url + '/00ALIASES.txt'
+        cmd = ['curl', '-s', url]
+        content = communicate(cmd)
+        if not content:
+            return False
+        for line in content:
+            if '->' in line:
+                alias, pkg = line.split('->')
+                self.aliases[alias] = pkg
+
     def sync(self):
         status = self._retrieve_manifest()
         if status == False:
             print >> sys.stderr, "Could not synchronize with '%s'" % self.site_url
             return False
+        status = self._retrieve_aliases()
         return True
 
     def match_package(self, pkg):
@@ -374,6 +386,25 @@ class RemoteRepository(object):
         else:
             return None
 
+
+def command_alias(options, args=[]):
+    'List aliases.'
+    sts = 0
+    remote = RemoteRepository()
+    if remote.sync() is False:
+        return 1
+    if not args:
+        for alias in remote.aliases:
+            print '%s->%s' % (alias, remote.aliases[alias])
+    else:
+        for alias in args:
+            pkg = remote.aliases.get(alias, None)
+            if pkg:
+                print '%s->%s' % (alias, pkg)
+            else:
+                print >> sys.stderr, '%s: Not found!' % alias
+                sts = 1
+    return sts
 
 def command_search(options, args=[]):
     'List all available (remote) packages.'
@@ -488,6 +519,9 @@ def command_install(options, args=[]):
             repo.install_package(name, options.verbose)
         else:
             if remote:
+                if remote.aliases.has_key(name):
+                    name = remote.aliases[name]
+                    print 'Using %s' % name
                 pkg = remote.match_package(name) or remote.latest_version(name)
                 if pkg:
                     print 'Downloading %s...' % pkg.package
@@ -564,20 +598,17 @@ def command_status(options, args):
     'Show repositories status.'
     print 'Rudix %d on OS X %s (%s)' % (RudixVersion,
                                         OSXVersion,
-                                        OSX[OSXVersion])
+                                        OSX.get(OSXVersion, '?'))
     repo = Repository(options.volume)
     repo.sync()
     print repo
-    if options.verbose:
-        for pkg in repo.packages:
-            print pkg
     remote = RemoteRepository()
     if remote.sync() is False:
         return 1
     print remote
     if options.verbose:
-        for pkg in remote.packages:
-            print pkg
+        if remote.aliases:
+            print '%d alias(es)' % len(remote.aliases)
     return 0
 
 def command_search_path(options, args=[]):
@@ -653,6 +684,9 @@ def main(args=None):
     commands.add_option('-S', '--search-path', action='store_const', dest='command',
                         const=command_search_path,
                         help='search for path in all packages and print if matched')
+    commands.add_option('-a', '--alias', action='store_const', dest='command',
+                        const=command_alias,
+                        help='list aliases')
     commands.add_option('-z', '--freeze', action='store_const', dest='command',
                         const=command_freeze,
                         help='freeze package list.')

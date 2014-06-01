@@ -1,7 +1,7 @@
 .\"
-.\" Copyright (c) 2005-2014 Ruda Moura
+.\" Copyright (c) 2005-2014 Rudix (Ruda Moura)
 .\"
-.Dd May 29, 2014
+.Dd May 31, 2014
 .Dt RUDIX 1
 .Os
 .Sh NAME
@@ -51,6 +51,8 @@ Remove (uninstall) all installed packages. This operation requires root privileg
 Search for packages available for installation.
 .It Fl -search-path Ar path
 Print all packages that matches some path.
+.It Fl -alias
+List aliases.
 .It Fl -freeze
 Freeze package list.
 .El
@@ -58,7 +60,7 @@ Freeze package list.
 The
 .Nm
 utility accepts simple command actions which are related to the options just seen above.
-The commands are: help, version, list, info, files, install, download, update, remove, remove-all, status, search, search-path, and freeze.
+The commands are: help, version, list, info, files, install, download, update, remove, remove-all, status, search, search-path, alias and freeze.
 .Sh SEE ALSO
 .Xr pkgutil 1 ,
 .Xr installer 8 ,

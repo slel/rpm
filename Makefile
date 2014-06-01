@@ -11,6 +11,8 @@ rudix.pdf: rudix.1
 	groff  -Tps  -mandoc -c rudix.1 > rudix.ps
 	pstopdf rudix.ps -o rudix.pdf
 
+all: rudix.pdf test
+
 install: test rudix.pdf
 	install -d $(DESTDIR)/$(BINDIR)
 	install -m 755 rudix.py $(DESTDIR)/$(BINDIR)/rudix
