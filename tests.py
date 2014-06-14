@@ -19,6 +19,9 @@ class FunctionTests(unittest.TestCase):
         self.assertEqual(version_compare('1.0.1-2', '1.0.1-10'), -1)
         self.assertEqual(version_compare('R13B', 'R14B'), -1)
         self.assertEqual(version_compare('1.0.1', '1.0.1-0'), 0)
+        self.assertEqual(version_compare('7.2', '7.2e'), -1)
+        self.assertEqual(version_compare('7.2d', '7.2e'), -1)
+        self.assertEqual(version_compare('7.2e', '7.4.0'), -1)
 
     def test_sort_version(self):
         l = ['1.0', '1.0-2', '1.0.1', '1.2', '1.7', '1.7.1']
