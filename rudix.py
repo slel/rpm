@@ -12,6 +12,7 @@ import gzip
 import subprocess
 import urllib2
 import platform
+import fnmatch
 
 from distutils.version import LooseVersion
 
@@ -161,14 +162,58 @@ class Package(object):
         return content
 
     def uninstall(self, verbose=False):
-        for x in self.get_content():
+        FORBIDDEN = [
+            '/Applications',
+            '/Library',
+            '/Library/Python',
+            '/Library/Python/2.?',
+            '/Library/Python/2.?/site-packages',
+            '/Network',
+            '/System',
+            '/Users',
+            '/Volumes',
+            '/bin',
+            '/cores',
+            '/dev',
+            '/etc',
+            '/home',
+            '/mach_kernel'
+            '/net',
+            '/private',
+            '/sbin',
+            '/tmp',
+            '/usr',
+            '/var', ]
+        def is_forbidden(path):
+            for pattern in FORBIDDEN:
+                if fnmatch.fnmatch(path, pattern):
+                    return True
+            return False
+        dirs = []
+        for x in self.get_content(filter_dirs=False):
+            if is_forbidden(x):
+                if verbose:
+                    print "Skipping '%s'" % x
+                continue
+            if os.path.isdir(x):
+                dirs.append(x)
+                continue
+            if verbose:
+                print "Removing '%s'" % x
             try:
                 os.unlink(x)
             except OSError as err:
-                print >> sys.stderr, err
-            else:
                 if verbose:
-                    print "Removing '%s'" % x
+                    print >> sys.stderr, err
+        dirs.sort(lambda p1, p2: p1.count('/') - p2.count('/'), reverse=True)
+        for x in dirs:
+            if verbose:
+                print "Removing directory '%s'" % x
+            try:
+               os.rmdir(x)
+            except OSError as err:
+                if verbose:
+                    print >> sys.stderr, err
         cmd = ['pkgutil', '--volume', self.volume, '--forget', self.package_id]
         return call(cmd, silent=False)
 
