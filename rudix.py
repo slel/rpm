@@ -17,10 +17,10 @@ import fnmatch
 from distutils.version import LooseVersion
 
 __author__ = 'Rudá Moura <ruda.moura@gmail.com>'
-__copyright__ = 'Copyright © 2005-2014 Rudix (Ruda Moura)'
+__copyright__ = 'Copyright © 2005-2014 Rudix'
 __credits__ = 'Rudá Moura, Leonardo Santagada'
 __license__ = 'BSD'
-__version__ = '2014.5'
+__version__ = '2014.6'
 
 Volume = os.getenv('VOLUME', '/')
 Vendor = os.getenv('VENDOR', 'org.rudix.pkg')
@@ -29,7 +29,7 @@ RudixVersion = int(os.getenv('RUDIX_VERSION', '2014'))
 
 OSX = {'10.6': 'Snow Leopard',
        '10.7': 'Lion',
-       '10.8': 'Montain Lion',
+       '10.8': 'Mountain Lion',
        '10.9': 'Mavericks'}
 try:
     OSXVersion = platform.mac_ver()[0].rsplit('.', 1)[0]
