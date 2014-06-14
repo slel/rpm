@@ -383,7 +383,7 @@ class RemoteRepository(object):
 
     def sync(self):
         status = self._retrieve_manifest()
-        if status == False:
+        if status is False:
             print >> sys.stderr, "Could not synchronize with '%s'" % self.site_url
             return False
         status = self._retrieve_aliases()
@@ -413,23 +413,6 @@ class RemoteRepository(object):
     def latest_version(self, name):
         versions = self.get_versions(name)
         return versions[0] if versions else []
-
-    def search_package(self, name):
-        options = []
-        for pkg in self.packages:
-            p = RemotePackage(pkg)
-            if name == p.name:
-                options.append((pkg, '%s-%s' % (v, r)))
-            else:
-                pass
-        if options:
-            options = sorted(list(set(options)),
-                             cmp=lambda x, y: version_compare(x.version,
-                                                              y.version))
-            options = [x[0] for x in options]
-            return options[-1]
-        else:
-            return None
 
 
 def command_alias(options, args=[]):
