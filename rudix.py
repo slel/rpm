@@ -579,13 +579,14 @@ def command_remove(options, args=[]):
 @administrator
 def command_remove_all(options, args=[]):
     'Remove (uninstall) all packages.'
-    print "Using this option will remove *ALL* Rudix packages!"
-    print "Are you sure you want to proceed? (answer 'yes' or 'y' to confirm)"
-    answer = raw_input().strip()
-    if answer not in ['yes', 'y']:
-        print 'Great!'
-        return
-    print 'Removing packages...'
+    if not options.force:
+        print "Using this option will remove *ALL* Rudix packages!"
+        print "Are you sure you want to proceed? (answer 'yes' or 'y' to confirm)"
+        answer = raw_input().strip()
+        if answer not in ['yes', 'y']:
+            print 'Great!'
+            return
+    print 'Removing package(s)...'
     repo = Repository(options.volume)
     repo.get_packages()
     for pkg in repo.packages:
@@ -648,6 +649,8 @@ def main(args=None):
                       help='displays more information when available')
     parser.add_option('--volume', default=Volume,
                       help='set volume to use. Default "%default"')
+    parser.add_option('--force', action='store_true', default=False,
+                      help='force operation')
     commands = optparse.OptionGroup(parser,
                                     'Commands',
                                     'The Package manager commands.')
