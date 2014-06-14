@@ -417,6 +417,9 @@ def command_search(options, args=[]):
             print pkg
     else:
         for name in args:
+            if remote.aliases.has_key(name):
+                name = remote.aliases[name]
+                print "Using '%s'" % name
             versions = remote.get_versions(name)
             if versions:
                 for p in versions:
@@ -521,7 +524,7 @@ def command_install(options, args=[]):
             if remote:
                 if remote.aliases.has_key(name):
                     name = remote.aliases[name]
-                    print 'Using %s' % name
+                    print "Using '%s'" % name
                 pkg = remote.match_package(name) or remote.latest_version(name)
                 if pkg:
                     print 'Downloading %s...' % pkg.package
