@@ -107,6 +107,8 @@ class Package(object):
         self._package = None
         self._version = None
         self._instalL_date = None
+        self._files = None
+        self._dirs = None
 
     def __str__(self):
         return "Package '%s' on volume '%s'" % (self.package_id,
@@ -139,6 +141,12 @@ class Package(object):
         self._package = '%s-%s.pkg' % (self.name, self.version)
         return self._package
 
+    @property
+    def files(self):
+        if not self._files:
+            self._files = self.get_files()
+        return self._files
+
     def get_info(self):
         cmd = ['pkgutil', '-v', '--volume', self.volume,
                                 '--pkg-info', self.package_id]
@@ -153,44 +161,43 @@ class Package(object):
                 self._install_date = line[len('install-time: '):]
         return self._version, self._install_date
 
-    def get_content(self, filter_dirs=True):
-        cmd = ['pkgutil', '--volume', self.volume, '--files', self.package_id]
+    def get_files(self):
+        cmd = ['pkgutil', '--volume', self.volume,
+                          '--files', self.package_id]
         out = communicate(cmd)
-        content = [self.volume + line.strip() for line in out]
-        if filter_dirs:
-            content = [x for x in content if os.path.isfile(x)]
+        content = [os.path.join(self.volume, line.strip()) for line in out]
         return content
 
     def uninstall(self, verbose=False):
         FORBIDDEN = [
-            '/Applications',
-            '/Library',
-            '/Library/Python',
-            '/Library/Python/2.?',
-            '/Library/Python/2.?/site-packages',
-            '/Network',
-            '/System',
-            '/Users',
-            '/Volumes',
-            '/bin',
-            '/cores',
-            '/dev',
-            '/etc',
-            '/home',
-            '/mach_kernel'
-            '/net',
-            '/private',
-            '/sbin',
-            '/tmp',
-            '/usr',
-            '/var', ]
+            'Applications',
+            'Library',
+            'Library/Python',
+            'Library/Python/2.?',
+            'Library/Python/2.?/site-packages',
+            'Network',
+            'System',
+            'Users',
+            'Volumes',
+            'bin',
+            'cores',
+            'dev',
+            'etc',
+            'home',
+            'mach_kernel'
+            'net',
+            'private',
+            'sbin',
+            'tmp',
+            'usr',
+            'var', ]
         def is_forbidden(path):
             for pattern in FORBIDDEN:
-                if fnmatch.fnmatch(path, pattern):
+                if fnmatch.fnmatch(path, os.path.join(self.volume, pattern)):
                     return True
             return False
         dirs = []
-        for x in self.get_content(filter_dirs=False):
+        for x in self.files:
             if is_forbidden(x):
                 if verbose:
                     print "Skipping '%s'" % x
@@ -467,7 +474,7 @@ def command_list(options, args):
     for pkg in repo.packages:
         pkg = normalize(pkg)
         if options.verbose:
-            p = Package(pkg)
+            p = Package(pkg, volume=options.volume)
             print '%s version %s (install: %s)' % (p.package_id,
                                                    p.version,
                                                    p.install_date)
@@ -508,7 +515,10 @@ def command_files(options, args=[]):
             print >>sys.stderr, "Package '%s' is not installed" % pkg
             sts = 1
             continue
-        for x in p.get_content(filter_dirs=not options.verbose):
+        print p
+        for x in p.files:
+            if os.path.isdir(x) and not options.verbose:
+                continue
             print x
     return sts
 
@@ -572,7 +582,7 @@ def command_update(options, args):
         return 1
     to_update = []
     for pkg in repo.packages:
-        p_local = Package(pkg)
+        p_local = Package(pkg, volume=options.volume)
         p_remote = remote.latest_version(p_local.name)
         if version_compare(p_local.version,
                            p_remote.version) >= 0:
@@ -596,7 +606,7 @@ def command_remove(options, args=[]):
     sts = 0
     for pkg in args:
         pkg = normalize(pkg)
-        p = Package(pkg)
+        p = Package(pkg, volume=options.volume)
         if p.installed:
             p.uninstall(options.verbose)
         else:
@@ -621,7 +631,7 @@ def command_remove_all(options, args=[]):
     repo = Repository(options.volume)
     repo.get_packages()
     for pkg in repo.packages:
-        p = Package(pkg)
+        p = Package(pkg, volume=options.volume)
         p.uninstall(options.verbose)
     # Remember LinuxConf...
     print 'Cry a little tear, because Rudix is not on this machine anymore...'
@@ -665,7 +675,7 @@ def command_freeze(options, args=[]):
     repo = Repository(options.volume)
     repo.sync()
     for pkg in repo.packages:
-        print Package(pkg).package
+        print Package(pkg, volume=options.volume).package
 
 
 def main(args=None):
